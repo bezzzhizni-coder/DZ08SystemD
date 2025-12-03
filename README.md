@@ -80,6 +80,28 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
+
+gor@testsrv2:~$ sudo systemctl daemon-reload
+gor@testsrv2:~$ sudo systemctl start spawn-fcgi
+gor@testsrv2:~$ sudo systemctl status spawn-fcgi.service
+● spawn-fcgi.service - Spawn-fcgi startup service by Otus
+     Loaded: loaded (/etc/systemd/system/spawn-fcgi.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2025-12-03 12:45:58 UTC; 13s ago
+   Main PID: 26033 (php-cgi)
+      Tasks: 33 (limit: 4595)
+     Memory: 14.5M (peak: 14.8M)
+        CPU: 41ms
+     CGroup: /system.slice/spawn-fcgi.service
+             ├─26033 /usr/bin/php-cgi
+             ├─26034 /usr/bin/php-cgi
+             ├─26035 /usr/bin/php-cgi
+             ├─26036 /usr/bin/php-cgi
+             ├─26037 /usr/bin/php-cgi
+             ├─26038 /usr/bin/php-cgi
+             ├─26039 /usr/bin/php-cgi
+             ├─26040 /usr/bin/php-cgi
+             ├─26041 /usr/bin/php-cgi
+
 ```
 > исправлено PIDFile=/var/run/spawn-fcgi.pid на PIDFile=/run/spawn-fcgi.pid, иначе сервис не стартует  
 > 3

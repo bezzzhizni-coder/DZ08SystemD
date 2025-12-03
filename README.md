@@ -48,20 +48,6 @@ gor@testsrv:~$ sudo systemctl status watchlog.timer
    Triggers: ● watchlog.service
 
 дек 03 10:18:46 testsrv systemd[1]: Started watchlog.timer - Run watchlog service every 30 seconds.
-```
->вышеприведенный скрипт почему-то не работал
-```
-#!/bin/bash
-#WORD="$1"
-#LOG="$2"
-echo "Debug: WORD=$WORD, LOG=$LOG" >> /tmp/debug.log
-DATE=$(date +"%a %b %d %H:%M:%S %Z %Y")
-if grep "$WORD" "$LOG"; then
- logger "$DATE: I found word, Master!"
- echo "Found: $WORD in $LOG" >> /tmp/debug.log
-else
-    echo "Not found: $WORD in $LOG" >> /tmp/debug.log
-fi
 
 gor@testsrv:~$ sudo tail -n 10 /var/log/syslog  | grep word
 2025-12-03T12:07:51.227146+00:00 testsrv systemd[1]: Starting watchlog.service - Watchlog service — monitors log for keyword...
@@ -70,5 +56,5 @@ gor@testsrv:~$ sudo tail -n 10 /var/log/syslog  | grep word
 2025-12-03T12:08:23.755623+00:00 testsrv systemd[1]: Starting watchlog.service - Watchlog service — monitors log for keyword...
 2025-12-03T12:08:23.768012+00:00 testsrv root: Ср дек 03 12:08:23 UTC 2025: I found word, Master!
 2025-12-03T12:08:23.771338+00:00 testsrv systemd[1]: Finished watchlog.service - Watchlog service — monitors log for keyword.
-```
-> а вот так заработало...
+
+

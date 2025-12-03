@@ -77,5 +77,85 @@ KillMode=process
 [Install]
 WantedBy=multi-user.target
 ```
-> исправлено PIDFile=/var/run/spawn-fcgi.pid на PIDFile=/run/spawn-fcgi.pid, иначе сервис не стартует
+> исправлено PIDFile=/var/run/spawn-fcgi.pid на PIDFile=/run/spawn-fcgi.pid, иначе сервис не стартует  
+> 3
 ```
+gor@testsrv:~$ sudo cat /etc/systemd/system/nginx@.service
+[Unit]
+Description=A high performance web server and a reverse proxy server
+Documentation=man:nginx(8)
+After=network.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx-%I.pid
+ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx-%I.conf -q -g 'daemon on; master_process on;'
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx-%I.conf -g 'daemon on; master_process on;'
+ExecReload=/usr/sbin/nginx -c /etc/nginx/nginx-%I.conf -g 'daemon on; master_process on;' -s reload
+ExecStop=-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx-%I.pid
+TimeoutStopSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
+
+gor@testsrv:~$ sudo touch /etc/nginx/nginx-first.conf
+gor@testsrv:~$ sudo touch /etc/nginx/nginx-second.conf
+
+gor@testsrv:~$ sudo cat /etc/nginx/nginx-first.conf
+user www-data;
+worker_processes auto;
+#pid /run/nginx.pid;
+pid /run/nginx-first.pid;
+error_log /var/log/nginx/error.log;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+        worker_connections 768;
+        # multi_accept on;
+}
+
+http {
+        server {
+                listen 9001;
+        }
+...
+
+gor@testsrv:~$ sudo cat /etc/nginx/nginx-second.conf
+user www-data;
+worker_processes auto;
+#pid /run/nginx.pid;
+pid /run/nginx-second.pid;
+error_log /var/log/nginx/error.log;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+        worker_connections 768;
+        # multi_accept on;
+}
+
+http {
+        server {
+                listen 9002;
+        }
+...
+
+gor@testsrv:~$ sudo ss -tnulp | grep nginx
+tcp   LISTEN 0      511                 0.0.0.0:9002       0.0.0.0:*    users:(("nginx",pid=27708,fd=5),("nginx",pid=27707,fd=5))
+tcp   LISTEN 0      511                 0.0.0.0:9001       0.0.0.0:*    users:(("nginx",pid=27592,fd=5),("nginx",pid=27591,fd=5))
+tcp   LISTEN 0      511                 0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=1880,fd=5),("nginx",pid=1876,fd=5))
+tcp   LISTEN 0      511                    [::]:80            [::]:*    users:(("nginx",pid=1880,fd=6),("nginx",pid=1876,fd=6))
+
+gor@testsrv:~$ sudo ps afx | grep nginx
+   1876 ?        Ss     0:00 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+   1880 ?        S      0:00  \_ nginx: worker process
+  27767 pts/1    S+     0:00              \_ grep --color=auto nginx
+  27591 ?        Ss     0:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx-first.conf -g daemon on; master_process on;
+  27592 ?        S      0:00  \_ nginx: worker process
+  27707 ?        Ss     0:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx-second.conf -g daemon on; master_process on;
+  27708 ?        S      0:00  \_ nginx: worker process
+```
+
+
+
+

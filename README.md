@@ -9,15 +9,19 @@ gor@testsrv:~$ sudo tee /etc/default/watchlog > /dev/null << 'EOF'
 > LOG="/var/log/watchlog.log"
 > EOF
 gor@testsrv:~$ sudo touch /var/log/watchlog.log
-gor@testsrv:~$ sudo tee /opt/watchlog.sh > /dev/null <<'EOF'
-> #!/bin/bash
-> WORD="$1"
-> LOG="$2"
-> DATE=$(date +"%a %b %d %H:%M:%S %Z %Y")
-> if grep -q "$WORD" "$LOG"; then
->  logger "$DATE: I found word, Master!"
-> fi
-> EOF
+gor@testsrv:~$ sudo cat /opt/watchlog.sh
+#!/bin/bash
+#WORD="$1"
+#LOG="$2"
+#echo "Debug: WORD=$WORD, LOG=$LOG" >> /tmp/debug.log
+DATE=$(date +"%a %b %d %H:%M:%S %Z %Y")
+if grep "$WORD" "$LOG"; then
+ logger "$DATE: I found word, Master!"
+# echo "Found: $WORD in $LOG" >> /tmp/debug.log
+#else
+#    echo "Not found: $WORD in $LOG" >> /tmp/debug.log
+fi
+
 gor@testsrv:~$ sudo chmod +x /opt/watchlog.sh
 gor@testsrv:~$ sudo tee /etc/systemd/system/watchlog.service > /dev/null <<'EOF'
 > [Unit]
